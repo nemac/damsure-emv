@@ -47,8 +47,6 @@
         .tab-item:hover { color: #463E5B; background-color: #e8e4f0; }
         .tab-item.active { color: #463E5B; background-color: white; font-weight: 600; border: 1px solid #463E5B; border-bottom: 1px solid white; }
         .map-export-wrapper { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
-        .export-panel { display: flex; flex-direction: row; gap: 16px; align-items: center; margin-bottom: 16px; }
-        .export-panel-label { color: #666; font-size: 13px; font-weight: 600; margin: 0; }
         .export-buttons { display: flex; flex-direction: row; gap: 8px; }
         .map-section { background: transparent; border-radius: 8px; overflow: hidden; max-width: 900px; }
         .map-container { position: relative; }
@@ -56,8 +54,41 @@
         #map img { display: block; width: 100%; height: auto; max-width: 100%; }
         #map .no-map-message { text-align: center; color: #666; padding: 40px; }
         #map .no-map-message svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5; }
-        .export-map-btn { background: #8b7cb3; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; justify-content: center; }
-        .export-map-btn:hover { background: #7a6ba3; }
+
+        /* Carousel Styles - Multiple thumbnails visible with 12px gap, arrows outside */
+        .carousel-container { position: relative; width: 100%; max-width: 1100px; overflow: hidden; margin-bottom: 16px; padding: 0 90px; }
+        .carousel-wrapper { display: flex; gap: 12px; transition: transform 0.3s ease-in-out; }
+        .carousel-slide { flex: 0 0 auto; display: flex; justify-content: center; }
+        .carousel-slide img { max-height: 350px; width: auto; display: block; cursor: pointer; border-radius: 8px; }
+        .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); background: #8b7cb3; color: white; border: none; width: 80px; height: 80px; border-radius: 50%; cursor: pointer; font-size: 28px; display: flex; align-items: center; justify-content: center; z-index: 10; opacity: 0.7; transition: opacity 0.2s; }
+        .carousel-nav:hover { opacity: 1; background: #4a3f6b; }
+        .carousel-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+        .carousel-prev { left: 0; }
+        .carousel-next { right: 0; }
+        .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 8px; }
+        .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: #e0e0e0; border: none; cursor: pointer; transition: background 0.2s; padding: 0; }
+        .carousel-dot.active { background: #4a3f6b; }
+        .carousel-dot:hover { background: #8b7cb3; }
+        .carousel-title { text-align: center; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 16px; }
+        .carousel-subtitle { font-weight: 400; color: #666; }
+
+        /* Lightbox Styles */
+        .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
+        .lightbox.active { display: flex; }
+        .lightbox-close { position: absolute; top: 20px; right: 30px; background: none; border: none; color: white; font-size: 36px; cursor: pointer; z-index: 1001; }
+        .lightbox-close:hover { color: #ccc; }
+        .lightbox-img { max-width: 90%; max-height: 80%; object-fit: contain; }
+        .lightbox-btn { background: #8b7cb3; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 14px; cursor: pointer; margin-top: 20px; }
+        .lightbox-btn:hover { background: #4a3f6b; }
+        .lightbox-title { color: white; font-size: 16px; margin-bottom: 16px; text-align: center; }
+
+        /* Download All (Zip) Buttons */
+        .download-all-panel { display: flex; flex-direction: row; gap: 16px; align-items: center; margin-bottom: 16px; }
+        .download-all-label { color: #666; font-size: 13px; font-weight: 600; margin: 0; }
+        .download-all-buttons { display: flex; flex-direction: row; gap: 8px; }
+        .download-all-btn { background: #4a3f6b; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; }
+        .download-all-btn:hover { background: #7a6ba3; }
+
         .table-section { background: #f8f9fa; border-radius: 8px; padding: 20px; }
         .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .table-title { font-size: 20px; font-weight: 600; }
@@ -121,47 +152,67 @@
 
             <div class="tab-content">
             <div class="map-export-wrapper">
-                <div class="export-panel">
-                    <div class="export-panel-label">Export Map:</div>
-                    <div class="export-buttons">
-                        <button class="export-map-btn" onclick="exportMap('pdf')">
+                <!-- Download All Maps (Zip) -->
+                <div class="download-all-panel" id="download-all-panel" style="display: none;">
+                    <div class="download-all-label">Download All Maps:</div>
+                    <div class="download-all-buttons">
+                        <button class="download-all-btn" onclick="downloadZip('pdf')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            PDF
+                            All PDFs (ZIP)
                         </button>
-                        <button class="export-map-btn" onclick="exportMap('png')">
+                        <button class="download-all-btn" onclick="downloadZip('png')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            PNG
+                            All PNGs (ZIP)
                         </button>
-                        <button class="export-map-btn" onclick="exportMap('jpg')">
+                        <button class="download-all-btn" onclick="downloadZip('jpg')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            JPG
+                            All JPGs (ZIP)
                         </button>
                     </div>
                 </div>
+
+                <!-- Map Carousel -->
                 <section class="map-section">
-                    <div class="map-container">
-                        <div id="map">
-                            <div class="no-map-message">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                                </svg>
-                                <p>Select an inundation type to view the map</p>
-                            </div>
+                    <div class="carousel-container" id="carousel-container">
+                        <button class="carousel-nav carousel-prev" onclick="prevSlide()">&lt;</button>
+                        <div class="carousel-wrapper" id="carousel-wrapper">
+                            <!-- Slides will be populated by JavaScript -->
+                        </div>
+                        <button class="carousel-nav carousel-next" onclick="nextSlide()">&gt;</button>
+                    </div>
+                    <div class="carousel-dots" id="carousel-dots"></div>
+                    <div class="carousel-title" id="carousel-title"></div>
+
+                    <!-- Fallback for no maps -->
+                    <div id="map-placeholder">
+                        <div class="no-map-message">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                            </svg>
+                            <p>Select an inundation type to view the maps</p>
                         </div>
                     </div>
                 </section>
+            </div>
+
+            <!-- Lightbox Overlay - click outside to close -->
+            <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+                <button class="lightbox-close" onclick="event.stopPropagation(); closeLightbox()">&times;</button>
+                <div class="lightbox-title" id="lightbox-title" onclick="event.stopPropagation()"></div>
+                <img class="lightbox-img" id="lightbox-img" src="" alt="Map" onclick="event.stopPropagation()">
+                <button class="lightbox-btn" onclick="event.stopPropagation(); openInNewTab()">Open in New Tab</button>
             </div>
 
         <section class="table-section">
@@ -192,7 +243,7 @@
                 </div>
                 <span>DamSure</span>
             </div>
-            <p class="generation-info" style="color: #ccc; font-size: 12px; margin: 0;">Generated: 2026-02-24 14:43:02</p>
+            <p class="generation-info" style="color: #ccc; font-size: 12px; margin: 0;">Generated: 2026-02-24 19:22:26</p>
         </div>
         <div class="footer-bottom">
             &copy; 2026 DamSure. All rights reserved.
@@ -455,12 +506,453 @@
       }
     ],
     "hasMap": true,
-    "mapUrls": {
-      "pdf": "map-dss_wise.pdf",
-      "png": "map-dss_wise.png",
-      "jpg": "map-dss_wise.jpg"
-    },
-    "thumbnailUrl": "map-dss_wise-thumb.jpg"
+    "maps": [
+      {
+        "id": "overview",
+        "title": "Overview",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-overview-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-overview.pdf",
+          "png": "map-dss_wise-overview.png",
+          "jpg": "map-dss_wise-overview.jpg"
+        }
+      },
+      {
+        "id": "section-1",
+        "title": "Section 1",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-1-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-1.pdf",
+          "png": "map-dss_wise-section-1.png",
+          "jpg": "map-dss_wise-section-1.jpg"
+        }
+      },
+      {
+        "id": "section-2",
+        "title": "Section 2",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-2-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-2.pdf",
+          "png": "map-dss_wise-section-2.png",
+          "jpg": "map-dss_wise-section-2.jpg"
+        }
+      },
+      {
+        "id": "section-3",
+        "title": "Section 3",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-3-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-3.pdf",
+          "png": "map-dss_wise-section-3.png",
+          "jpg": "map-dss_wise-section-3.jpg"
+        }
+      },
+      {
+        "id": "section-4",
+        "title": "Section 4",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-4-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-4.pdf",
+          "png": "map-dss_wise-section-4.png",
+          "jpg": "map-dss_wise-section-4.jpg"
+        }
+      },
+      {
+        "id": "section-5",
+        "title": "Section 5",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-5-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-5.pdf",
+          "png": "map-dss_wise-section-5.png",
+          "jpg": "map-dss_wise-section-5.jpg"
+        }
+      },
+      {
+        "id": "section-6",
+        "title": "Section 6",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-6-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-6.pdf",
+          "png": "map-dss_wise-section-6.png",
+          "jpg": "map-dss_wise-section-6.jpg"
+        }
+      },
+      {
+        "id": "section-7",
+        "title": "Section 7",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-7-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-7.pdf",
+          "png": "map-dss_wise-section-7.png",
+          "jpg": "map-dss_wise-section-7.jpg"
+        }
+      },
+      {
+        "id": "section-8",
+        "title": "Section 8",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-8-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-8.pdf",
+          "png": "map-dss_wise-section-8.png",
+          "jpg": "map-dss_wise-section-8.jpg"
+        }
+      },
+      {
+        "id": "section-9",
+        "title": "Section 9",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-9-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-9.pdf",
+          "png": "map-dss_wise-section-9.png",
+          "jpg": "map-dss_wise-section-9.jpg"
+        }
+      },
+      {
+        "id": "section-10",
+        "title": "Section 10",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-10-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-10.pdf",
+          "png": "map-dss_wise-section-10.png",
+          "jpg": "map-dss_wise-section-10.jpg"
+        }
+      },
+      {
+        "id": "section-11",
+        "title": "Section 11",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-11-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-11.pdf",
+          "png": "map-dss_wise-section-11.png",
+          "jpg": "map-dss_wise-section-11.jpg"
+        }
+      },
+      {
+        "id": "section-12",
+        "title": "Section 12",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-12-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-12.pdf",
+          "png": "map-dss_wise-section-12.png",
+          "jpg": "map-dss_wise-section-12.jpg"
+        }
+      },
+      {
+        "id": "section-13",
+        "title": "Section 13",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-13-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-13.pdf",
+          "png": "map-dss_wise-section-13.png",
+          "jpg": "map-dss_wise-section-13.jpg"
+        }
+      },
+      {
+        "id": "section-14",
+        "title": "Section 14",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-14-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-14.pdf",
+          "png": "map-dss_wise-section-14.png",
+          "jpg": "map-dss_wise-section-14.jpg"
+        }
+      },
+      {
+        "id": "section-15",
+        "title": "Section 15",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-15-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-15.pdf",
+          "png": "map-dss_wise-section-15.png",
+          "jpg": "map-dss_wise-section-15.jpg"
+        }
+      },
+      {
+        "id": "section-16",
+        "title": "Section 16",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-16-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-16.pdf",
+          "png": "map-dss_wise-section-16.png",
+          "jpg": "map-dss_wise-section-16.jpg"
+        }
+      },
+      {
+        "id": "section-17",
+        "title": "Section 17",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-17-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-17.pdf",
+          "png": "map-dss_wise-section-17.png",
+          "jpg": "map-dss_wise-section-17.jpg"
+        }
+      },
+      {
+        "id": "section-18",
+        "title": "Section 18",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-18-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-18.pdf",
+          "png": "map-dss_wise-section-18.png",
+          "jpg": "map-dss_wise-section-18.jpg"
+        }
+      },
+      {
+        "id": "section-19",
+        "title": "Section 19",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-19-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-19.pdf",
+          "png": "map-dss_wise-section-19.png",
+          "jpg": "map-dss_wise-section-19.jpg"
+        }
+      },
+      {
+        "id": "section-20",
+        "title": "Section 20",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-20-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-20.pdf",
+          "png": "map-dss_wise-section-20.png",
+          "jpg": "map-dss_wise-section-20.jpg"
+        }
+      },
+      {
+        "id": "section-21",
+        "title": "Section 21",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-21-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-21.pdf",
+          "png": "map-dss_wise-section-21.png",
+          "jpg": "map-dss_wise-section-21.jpg"
+        }
+      },
+      {
+        "id": "section-22",
+        "title": "Section 22",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-22-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-22.pdf",
+          "png": "map-dss_wise-section-22.png",
+          "jpg": "map-dss_wise-section-22.jpg"
+        }
+      },
+      {
+        "id": "section-23",
+        "title": "Section 23",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-23-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-23.pdf",
+          "png": "map-dss_wise-section-23.png",
+          "jpg": "map-dss_wise-section-23.jpg"
+        }
+      },
+      {
+        "id": "section-24",
+        "title": "Section 24",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-24-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-24.pdf",
+          "png": "map-dss_wise-section-24.png",
+          "jpg": "map-dss_wise-section-24.jpg"
+        }
+      },
+      {
+        "id": "section-25",
+        "title": "Section 25",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-25-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-25.pdf",
+          "png": "map-dss_wise-section-25.png",
+          "jpg": "map-dss_wise-section-25.jpg"
+        }
+      },
+      {
+        "id": "section-26",
+        "title": "Section 26",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-26-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-26.pdf",
+          "png": "map-dss_wise-section-26.png",
+          "jpg": "map-dss_wise-section-26.jpg"
+        }
+      },
+      {
+        "id": "section-27",
+        "title": "Section 27",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-27-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-27.pdf",
+          "png": "map-dss_wise-section-27.png",
+          "jpg": "map-dss_wise-section-27.jpg"
+        }
+      },
+      {
+        "id": "section-28",
+        "title": "Section 28",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-28-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-28.pdf",
+          "png": "map-dss_wise-section-28.png",
+          "jpg": "map-dss_wise-section-28.jpg"
+        }
+      },
+      {
+        "id": "section-29",
+        "title": "Section 29",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-29-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-29.pdf",
+          "png": "map-dss_wise-section-29.png",
+          "jpg": "map-dss_wise-section-29.jpg"
+        }
+      },
+      {
+        "id": "section-30",
+        "title": "Section 30",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-30-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-30.pdf",
+          "png": "map-dss_wise-section-30.png",
+          "jpg": "map-dss_wise-section-30.jpg"
+        }
+      },
+      {
+        "id": "section-31",
+        "title": "Section 31",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-31-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-31.pdf",
+          "png": "map-dss_wise-section-31.png",
+          "jpg": "map-dss_wise-section-31.jpg"
+        }
+      },
+      {
+        "id": "section-32",
+        "title": "Section 32",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-32-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-32.pdf",
+          "png": "map-dss_wise-section-32.png",
+          "jpg": "map-dss_wise-section-32.jpg"
+        }
+      },
+      {
+        "id": "section-33",
+        "title": "Section 33",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-33-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-33.pdf",
+          "png": "map-dss_wise-section-33.png",
+          "jpg": "map-dss_wise-section-33.jpg"
+        }
+      },
+      {
+        "id": "section-34",
+        "title": "Section 34",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-34-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-34.pdf",
+          "png": "map-dss_wise-section-34.png",
+          "jpg": "map-dss_wise-section-34.jpg"
+        }
+      },
+      {
+        "id": "section-35",
+        "title": "Section 35",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-35-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-35.pdf",
+          "png": "map-dss_wise-section-35.png",
+          "jpg": "map-dss_wise-section-35.jpg"
+        }
+      },
+      {
+        "id": "section-36",
+        "title": "Section 36",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-36-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-36.pdf",
+          "png": "map-dss_wise-section-36.png",
+          "jpg": "map-dss_wise-section-36.jpg"
+        }
+      },
+      {
+        "id": "section-37",
+        "title": "Section 37",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-37-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-37.pdf",
+          "png": "map-dss_wise-section-37.png",
+          "jpg": "map-dss_wise-section-37.jpg"
+        }
+      },
+      {
+        "id": "section-38",
+        "title": "Section 38",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-38-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-38.pdf",
+          "png": "map-dss_wise-section-38.png",
+          "jpg": "map-dss_wise-section-38.jpg"
+        }
+      },
+      {
+        "id": "section-39",
+        "title": "Section 39",
+        "subtitle": null,
+        "thumbnailUrl": "map-dss_wise-section-39-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-dss_wise-section-39.pdf",
+          "png": "map-dss_wise-section-39.png",
+          "jpg": "map-dss_wise-section-39.jpg"
+        }
+      }
+    ],
+    "zipUrls": {
+      "pdf": "BUNCO-068-dss_wise-pdf-maps.zip",
+      "png": "BUNCO-068-dss_wise-png-maps.zip",
+      "jpg": "BUNCO-068-dss_wise-jpg-maps.zip"
+    }
   },
   "sera": {
     "table": [
@@ -786,12 +1278,68 @@
       }
     ],
     "hasMap": true,
-    "mapUrls": {
-      "pdf": "map-sera.pdf",
-      "png": "map-sera.png",
-      "jpg": "map-sera.jpg"
-    },
-    "thumbnailUrl": "map-sera-thumb.jpg"
+    "maps": [
+      {
+        "id": "overview",
+        "title": "Overview",
+        "subtitle": null,
+        "thumbnailUrl": "map-sera-overview-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-sera-overview.pdf",
+          "png": "map-sera-overview.png",
+          "jpg": "map-sera-overview.jpg"
+        }
+      },
+      {
+        "id": "section-1",
+        "title": "Section 1",
+        "subtitle": null,
+        "thumbnailUrl": "map-sera-section-1-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-sera-section-1.pdf",
+          "png": "map-sera-section-1.png",
+          "jpg": "map-sera-section-1.jpg"
+        }
+      },
+      {
+        "id": "section-2",
+        "title": "Section 2",
+        "subtitle": null,
+        "thumbnailUrl": "map-sera-section-2-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-sera-section-2.pdf",
+          "png": "map-sera-section-2.png",
+          "jpg": "map-sera-section-2.jpg"
+        }
+      },
+      {
+        "id": "section-3",
+        "title": "Section 3",
+        "subtitle": null,
+        "thumbnailUrl": "map-sera-section-3-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-sera-section-3.pdf",
+          "png": "map-sera-section-3.png",
+          "jpg": "map-sera-section-3.jpg"
+        }
+      },
+      {
+        "id": "section-4",
+        "title": "Section 4",
+        "subtitle": null,
+        "thumbnailUrl": "map-sera-section-4-thumb.jpg",
+        "mapUrls": {
+          "pdf": "map-sera-section-4.pdf",
+          "png": "map-sera-section-4.png",
+          "jpg": "map-sera-section-4.jpg"
+        }
+      }
+    ],
+    "zipUrls": {
+      "pdf": "BUNCO-068-sera-pdf-maps.zip",
+      "png": "BUNCO-068-sera-png-maps.zip",
+      "jpg": "BUNCO-068-sera-jpg-maps.zip"
+    }
   }
 };
         const AVAILABLE_TYPES = ["sera", "dss_wise"];
@@ -803,11 +1351,26 @@
         };
 
         let currentInundationType = null;
+        let currentSlideIndex = 0;
+        let currentMaps = [];
 
         function init() {
             generateTabs();
             if (AVAILABLE_TYPES.length > 0) {
                 selectInundationType(AVAILABLE_TYPES[0]);
+            }
+            // Add keyboard navigation
+            document.addEventListener('keydown', handleKeyboard);
+        }
+
+        function handleKeyboard(e) {
+            if (document.getElementById('lightbox').classList.contains('active')) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') { closeLightbox(); prevSlide(); }
+                if (e.key === 'ArrowRight') { closeLightbox(); nextSlide(); }
+            } else {
+                if (e.key === 'ArrowLeft') prevSlide();
+                if (e.key === 'ArrowRight') nextSlide();
             }
         }
 
@@ -830,6 +1393,7 @@
 
         function selectInundationType(type) {
             currentInundationType = type;
+            currentSlideIndex = 0;
 
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.classList.remove('active');
@@ -838,32 +1402,226 @@
                 }
             });
 
-            displayMap(type);
+            displayMaps(type);
             displayTable(type);
         }
 
-        function displayMap(type) {
-            const mapContainer = document.getElementById('map');
-            // Use thumbnail for faster loading
-            const thumbnailPath = EMBEDDED_DATA[type]?.thumbnailUrl || `map-${type}.png`;
+        function displayMaps(type) {
+            const data = EMBEDDED_DATA[type];
+            const carouselWrapper = document.getElementById('carousel-wrapper');
+            const carouselDots = document.getElementById('carousel-dots');
+            const carouselTitle = document.getElementById('carousel-title');
+            const placeholder = document.getElementById('map-placeholder');
+            const carouselContainer = document.getElementById('carousel-container');
+            const downloadPanel = document.getElementById('download-all-panel');
 
-            const img = new Image();
-            img.onload = function() {
-                mapContainer.innerHTML = '';
-                mapContainer.appendChild(img);
-            };
-            img.onerror = function() {
-                mapContainer.innerHTML = `
-                    <div class="no-map-message">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                        </svg>
-                        <p>Map not available for this scenario</p>
-                    </div>
-                `;
-            };
-            img.src = thumbnailPath;
-            img.alt = `EAP Map for ${DAM_INFO.name} - ${INUNDATION_TYPES[type]?.label || type}`;
+            // Get maps array from data (new structure)
+            currentMaps = data?.maps || [];
+
+            // Fallback to old single-map structure if no maps array
+            if (currentMaps.length === 0 && data?.hasMap) {
+                currentMaps = [{
+                    id: 'map',
+                    title: 'Map',
+                    subtitle: null,
+                    thumbnailUrl: data.thumbnailUrl || `map-${type}.png`,
+                    mapUrls: data.mapUrls || {
+                        pdf: `map-${type}.pdf`,
+                        png: `map-${type}.png`,
+                        jpg: `map-${type}.jpg`
+                    }
+                }];
+            }
+
+            if (currentMaps.length === 0) {
+                carouselContainer.style.display = 'none';
+                carouselDots.style.display = 'none';
+                carouselTitle.style.display = 'none';
+                placeholder.style.display = 'block';
+                downloadPanel.style.display = 'none';
+                return;
+            }
+
+            placeholder.style.display = 'none';
+            carouselContainer.style.display = 'block';
+            carouselDots.style.display = 'flex';
+            carouselTitle.style.display = 'block';
+
+            // Show download all panel if there are zips
+            if (data?.zipUrls) {
+                downloadPanel.style.display = 'flex';
+            } else {
+                downloadPanel.style.display = currentMaps.length > 1 ? 'flex' : 'none';
+            }
+
+            // Build carousel slides
+            carouselWrapper.innerHTML = '';
+            currentMaps.forEach((map, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'carousel-slide';
+                slide.innerHTML = `<img src="${map.thumbnailUrl}" alt="${map.title}" onclick="openLightbox(${index})">`;
+                carouselWrapper.appendChild(slide);
+            });
+
+            // Build dots
+            carouselDots.innerHTML = '';
+            currentMaps.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                carouselDots.appendChild(dot);
+            });
+
+            updateCarousel();
+        }
+
+        function updateCarousel() {
+            const wrapper = document.getElementById('carousel-wrapper');
+            const dots = document.querySelectorAll('.carousel-dot');
+            const titleEl = document.getElementById('carousel-title');
+            const slides = wrapper.querySelectorAll('.carousel-slide');
+
+            if (currentMaps.length === 0) return;
+
+            // Calculate scroll position based on slide widths + gaps (12px)
+            let scrollPosition = 0;
+            for (let i = 0; i < currentSlideIndex; i++) {
+                if (slides[i]) {
+                    scrollPosition += slides[i].offsetWidth + 12; // 12px gap
+                }
+            }
+            wrapper.style.transform = `translateX(-${scrollPosition}px)`;
+
+            // Update dots
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentSlideIndex);
+            });
+
+            // Update title
+            const currentMap = currentMaps[currentSlideIndex];
+            let titleHtml = currentMap.title;
+            if (currentMap.subtitle) {
+                titleHtml += ` <span class="carousel-subtitle">${currentMap.subtitle}</span>`;
+            }
+            titleEl.innerHTML = titleHtml;
+
+            // Update nav button states
+            document.querySelector('.carousel-prev').disabled = currentSlideIndex === 0;
+            document.querySelector('.carousel-next').disabled = currentSlideIndex === currentMaps.length - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < currentMaps.length - 1) {
+                currentSlideIndex++;
+                updateCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateCarousel();
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlideIndex = index;
+            updateCarousel();
+        }
+
+        function openLightbox(index) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxTitle = document.getElementById('lightbox-title');
+
+            currentSlideIndex = index;
+            const currentMap = currentMaps[index];
+
+            // Use full-size PNG for lightbox
+            lightboxImg.src = currentMap.mapUrls?.png || currentMap.thumbnailUrl;
+            let title = currentMap.title;
+            if (currentMap.subtitle) title += ` (${currentMap.subtitle})`;
+            lightboxTitle.textContent = title;
+
+            lightbox.classList.add('active');
+            updateCarousel();
+        }
+
+        let isNavigating = false;
+
+        function closeLightbox() {
+            // Don't close if we're in the middle of keyboard navigation
+            if (isNavigating) return;
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        function updateLightboxImage() {
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxTitle = document.getElementById('lightbox-title');
+            const currentMap = currentMaps[currentSlideIndex];
+            if (currentMap) {
+                lightboxImg.src = currentMap.mapUrls?.png || currentMap.thumbnailUrl;
+                let title = currentMap.title;
+                if (currentMap.subtitle) title += ` (${currentMap.subtitle})`;
+                lightboxTitle.textContent = title;
+            }
+        }
+
+        function lightboxNext() {
+            if (currentSlideIndex < currentMaps.length - 1) {
+                currentSlideIndex++;
+                updateLightboxImage();
+                updateCarousel();
+            }
+        }
+
+        function lightboxPrev() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateLightboxImage();
+                updateCarousel();
+            }
+        }
+
+        // Keyboard navigation for lightbox
+        document.addEventListener('keydown', function(e) {
+            const lightbox = document.getElementById('lightbox');
+            if (!lightbox.classList.contains('active')) return;
+
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                e.stopPropagation();
+                isNavigating = true;
+                lightboxNext();
+                setTimeout(() => { isNavigating = false; }, 100);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                e.stopPropagation();
+                isNavigating = true;
+                lightboxPrev();
+                setTimeout(() => { isNavigating = false; }, 100);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                isNavigating = false;
+                closeLightbox();
+            }
+        });
+
+        function openInNewTab() {
+            const currentMap = currentMaps[currentSlideIndex];
+            const url = currentMap.mapUrls?.png || currentMap.thumbnailUrl;
+            window.open(url, '_blank');
+        }
+
+        function downloadZip(format) {
+            const data = EMBEDDED_DATA[currentInundationType];
+            const zipUrl = data?.zipUrls?.[format];
+            if (zipUrl) {
+                const link = document.createElement('a');
+                link.href = zipUrl;
+                link.download = zipUrl;
+                link.click();
+            }
         }
 
         function displayTable(type) {
@@ -898,21 +1656,6 @@
 
             html += `</tbody></table>`;
             container.innerHTML = html;
-        }
-
-        function exportMap(format) {
-            // Use file URLs for download (no base64 embedding for faster page load)
-            const mapUrl = EMBEDDED_DATA[currentInundationType]?.mapUrls?.[format];
-            if (mapUrl) {
-                const link = document.createElement('a');
-                link.href = mapUrl;
-                link.download = `${DAM_INFO.stateId}-${currentInundationType}-eap-map.${format}`;
-                link.click();
-            } else {
-                // Fallback: try direct path
-                const filePath = `map-${currentInundationType}.${format}`;
-                window.open(filePath, '_blank');
-            }
         }
 
         function exportTable() {
